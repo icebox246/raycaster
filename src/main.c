@@ -24,6 +24,8 @@ float clamp(float a, float b, float v) {
 }
 float lerpc(float a, float b, float t) { return clamp(a, b, lerp(a, b, t)); }
 
+/* float dot(a_x, a_y, b_x, b_y) { return a_x * b_x + a_y * b_y; } */
+
 float raycast(float ox, float oy, float dx, float dy, char* grid, int gw,
               int gh, char* hit_char, Sides* side, float* hit_x, float* hit_y) {
     int gx = (ox), gy = (oy);
@@ -106,6 +108,11 @@ bool player_check_collision(float player_x, float player_y, float player_r,
                '.';
 }
 
+typedef struct {
+    float x, y;
+    SDL_Texture* tex;
+} Sprite;
+
 int main() {
     printf("[INFO] Hello, Raycasting!\n");
 
@@ -139,6 +146,10 @@ int main() {
     SDL_Texture* red_stone_tex = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
 
+    surf = SDL_LoadBMP("magic_ball.bmp");
+    SDL_Texture* magic_ball_tex = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+
     SDL_Texture* floor_tex =
         generate_floor_gradient(renderer, 0x31281d, 0x584734);
 
@@ -157,12 +168,30 @@ int main() {
         "a..............a"
         "a..bcb.....b...a"
         "a..b.......b...a"
-        "a..b...a.......a"
-        "a......a.......a"
+        "a..b...a......ba"
+        "a......a.....bba"
         "aaaaaaaaaaaaaaaa";
 
     float player_x = 2, player_y = 2;
     float player_a = PI;
+
+    Sprite sprites[10];
+    int sprite_count = 0;
+
+    Sprite magic_ball_sprite = {
+        .x = 2.5f,
+        .y = 2.5f,
+        .tex = magic_ball_tex,
+    };
+    sprites[sprite_count++] = magic_ball_sprite;
+
+    magic_ball_sprite.x = 4.5f;
+    magic_ball_sprite.y = 7.5f;
+    sprites[sprite_count++] = magic_ball_sprite;
+
+    magic_ball_sprite.x = 13.5f;
+    magic_ball_sprite.y = 8.5f;
+    sprites[sprite_count++] = magic_ball_sprite;
 
     float FOV = PI / 2;
 
@@ -256,11 +285,14 @@ int main() {
         // Do the actual rendering
 
         int columns = window_width / 3;
+        float depth_buf[columns];
         float aspect_ratio = window_width / (float)window_height;
         float column_w = window_width / (float)columns;
         float cx = 0;
-        float perp_x = -right_x * aspect_ratio + forward_x * cos(FOV / 2);
-        float perp_y = -right_y * aspect_ratio + forward_y * cos(FOV / 2);
+        float perp_x = -right_x * aspect_ratio + forward_x  //* cos(FOV / 2)
+            ;
+        float perp_y = -right_y * aspect_ratio + forward_y  //* cos(FOV / 2)
+            ;
         float jump_x = right_x * 2 / columns * aspect_ratio;
         float jump_y = right_y * 2 / columns * aspect_ratio;
 
@@ -271,9 +303,11 @@ int main() {
             float dist =
                 raycast(player_x, player_y, perp_x, perp_y, grid, grid_w,
                         grid_h, &hit_char, &side, &hit_x, &hit_y);
+            dist /= len(perp_x, perp_y);
+
+            depth_buf[i] = dist;
 
             float height = 500 / dist;
-            height *= len(perp_x, perp_y);
 
             SDL_Texture* tex;
 
@@ -320,7 +354,6 @@ int main() {
             perp_y += jump_y;
             cx += column_w;
         }
-
         // render a minimap
         for (int x = 0; x < grid_w; x++) {
             for (int y = 0; y < grid_h; y++) {
@@ -341,6 +374,53 @@ int main() {
                 SDL_Rect rect = {.x = x * 10, .y = y * 10, .w = 10, .h = 10};
                 SDL_RenderFillRect(renderer, &rect);
             }
+        }
+
+        for (int i = 0; i < sprite_count; i++) {
+            float soff_x = sprites[i].x - player_x;
+            float soff_y = sprites[i].y - player_y;
+
+            float dist = len(soff_x, soff_y);
+
+            float rot_y = soff_x * cos(-player_a) - soff_y * sin(-player_a);
+            float rot_x = soff_x * sin(-player_a) + soff_y * cos(-player_a);
+
+            float height = 500.f / rot_y;
+            if (rot_y < 0) continue;
+            float center_x =
+                window_width * (1 + rot_x / rot_y / aspect_ratio) / 2;
+
+            int start_x =
+                maxf(0, center_x - height / 2.f) / column_w * column_w;
+            int end_x = minf(center_x + height / 2.f, window_width) / column_w *
+                        column_w;
+            int width = end_x - start_x;
+
+            if (start_x > window_width || end_x < 0) continue;
+
+            for (int i = start_x / column_w; start_x < end_x; i++) {
+                if (depth_buf[i] > rot_y) break;
+                start_x += column_w;
+                width -= column_w;
+            }
+            for (int i = end_x / column_w; start_x < end_x; i--) {
+                if (depth_buf[i] > rot_y) break;
+                end_x -= column_w;
+                width -= column_w;
+            }
+
+            SDL_FRect rect = {.x = start_x,
+                              .y = (window_height - height) / 2,
+                              .w = width,
+                              .h = height};
+
+            SDL_Rect sample_rect = {
+                .x = (start_x - (center_x - height / 2.f)) / height *
+                     texture_size,
+                .y = 0,
+                .w = (end_x - start_x) / height * texture_size,
+                .h = texture_size};
+            SDL_RenderCopyF(renderer, sprites[i].tex, &sample_rect, &rect);
         }
 
         SDL_Rect rect = {
