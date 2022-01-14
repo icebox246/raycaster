@@ -8,3 +8,5 @@ Make sure you have `gcc` and `sdl2`
 ./make.sh
 ./ray
 ```
+
+![screenshot](./screenshot.jpg)
