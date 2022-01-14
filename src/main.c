@@ -149,6 +149,13 @@ int main() {
     surf = SDL_LoadBMP("magic_ball.bmp");
     SDL_Texture* magic_ball_tex = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
+    surf = SDL_LoadBMP("cat.bmp");
+    SDL_Texture* cat_tex = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+
+    surf = SDL_LoadBMP("leopard.bmp");
+    SDL_Texture* leopard_tex = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
 
     SDL_Texture* floor_tex =
         generate_floor_gradient(renderer, 0x31281d, 0x584734);
@@ -161,10 +168,10 @@ int main() {
 
     char grid[] =
         "aaaaaaaaaaaaaaaa"
-        "a..............a"
-        "a.....bbbb.....a"
-        "a.....bcbb...aaa"
-        "a.c............a"
+        "addddddddddd...a"
+        "ad....bbbb.....a"
+        "ad....bcbb...aaa"
+        "adc............a"
         "a..............a"
         "a..bcb.....b...a"
         "a..b.......b...a"
@@ -172,7 +179,7 @@ int main() {
         "a......a.....bba"
         "aaaaaaaaaaaaaaaa";
 
-    float player_x = 2, player_y = 2;
+    float player_x = 4, player_y = 4;
     float player_a = PI;
 
     Sprite sprites[10];
@@ -192,6 +199,13 @@ int main() {
     magic_ball_sprite.x = 13.5f;
     magic_ball_sprite.y = 8.5f;
     sprites[sprite_count++] = magic_ball_sprite;
+
+    Sprite cat_sprite = {
+        .x = 8.5f,
+        .y = 6.5f,
+        .tex = cat_tex,
+    };
+    sprites[sprite_count++] = cat_sprite;
 
     float FOV = PI / 2;
 
@@ -321,6 +335,9 @@ int main() {
                 case 'c':
                     tex = red_stone_tex;
                     break;
+                case 'd':
+                    tex = leopard_tex;
+                    break;
             }
 
             SDL_FRect rect = {.x = cx,
@@ -369,6 +386,9 @@ int main() {
                         break;
                     case 'c':
                         SDL_SetRenderDrawColor(renderer, COLOR(0x5B0000), 255);
+                        break;
+                    case 'd':
+                        SDL_SetRenderDrawColor(renderer, COLOR(0xC98F72), 255);
                         break;
                 }
                 SDL_Rect rect = {.x = x * 10, .y = y * 10, .w = 10, .h = 10};
