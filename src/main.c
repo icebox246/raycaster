@@ -207,9 +207,8 @@ void main_loop() {
 #ifndef __EMSCRIPTEN__
     SDL_RenderCopy(renderer, floor_tex, NULL, &lower_screen_half_rect);
 #else
-	SDL_RenderFillRect(renderer,&lower_screen_half_rect);
+    SDL_RenderFillRect(renderer, &lower_screen_half_rect);
 #endif
-
 
     // Process controlls
 
@@ -411,11 +410,24 @@ int main() {
         exit(1);
     }
 
-    window = SDL_CreateWindow(
-        "Raycaster", 10, 10, window_width, window_height,
-        SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);
+    window = SDL_CreateWindow("Raycaster", 10, 10, window_width, window_height,
+#ifdef __EMSCRIPTEN__
+                              0
+#else
+                              SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_RESIZABLE |
+                                  SDL_WINDOW_MAXIMIZED
+#endif
+    );
+    if (window == NULL) {
+        printf("[ERROR] SDL failed to create window: %s\n", SDL_GetError());
+        exit(1);
+    }
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (renderer == NULL) {
+        printf("[ERROR] SDL failed to create renderer: %s\n", SDL_GetError());
+        exit(1);
+    }
 
     // Load textures
 
