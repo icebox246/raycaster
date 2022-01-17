@@ -204,7 +204,7 @@ var Module = typeof Module !== 'undefined' ? Module : {};
     }
   
    }
-   loadPackage({"files": [{"filename": "/assets/magic_ball.bmp", "start": 0, "end": 65674}, {"filename": "/assets/leopard.bmp", "start": 65674, "end": 114964}, {"filename": "/assets/red_stone.bmp", "start": 114964, "end": 164254}, {"filename": "/assets/cat.bmp", "start": 164254, "end": 229928}, {"filename": "/assets/weird_stone.bmp", "start": 229928, "end": 279218}, {"filename": "/assets/terracotta.bmp", "start": 279218, "end": 328508}], "remote_package_size": 328508, "package_uuid": "97f78820-1b57-441d-8db9-a52564d8e5f0"});
+   loadPackage({"files": [{"filename": "/assets/magic_ball.bmp", "start": 0, "end": 65674}, {"filename": "/assets/leopard.bmp", "start": 65674, "end": 114964}, {"filename": "/assets/red_stone.bmp", "start": 114964, "end": 164254}, {"filename": "/assets/cat.bmp", "start": 164254, "end": 229928}, {"filename": "/assets/weird_stone.bmp", "start": 229928, "end": 279218}, {"filename": "/assets/terracotta.bmp", "start": 279218, "end": 328508}], "remote_package_size": 328508, "package_uuid": "80a9e819-a0c3-4b5c-a66c-86306b39f8d0"});
   
   })();
   
